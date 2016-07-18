@@ -4,7 +4,7 @@ describe GH::Retry do
   let(:not_finder) do
     Class.new(GH::MockBackend) do
       def fetch_resource(key)
-        if key =~ /not-found/
+        if key =~ %r{users/not-found}
           @requests << key
           error = Struct.new(:info).new(response_status: 404)
           raise GH::Error.new(error)
