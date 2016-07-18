@@ -7,29 +7,34 @@ module GH
   class Retry < Wrapper
     DEFAULTS = {
       retries: 5,
-      sleep: 1
+      wait: 1
     }
 
-    def [](key, opts = {})
-      generate_response key, fetch_resource(key, opts)
+    attr_accessor :retries, :wait
+
+    def initialize(backend = nil, options = {})
+      options = DEFAULTS.merge options
+      super backend, options
     end
 
-    def fetch_resource(key, opts = {})
-      opts = DEFAULTS.merge opts
-      retries, sleep_time = opts[:retries], opts[:sleep]
+    def fetch_resource(key)
       begin
-        retries -= 1
-        super(key)
+        decrement_retries!
+        super key
       rescue GH::Error(response_status: 404) => e
-        raise(e) unless retries_remaining?(retries)
-        sleep sleep_time
-        fetch_resource key, retries: retries, sleep: sleep_time
+        retries_remaining? or raise e
+        sleep wait
+        fetch_resource key
       end
     end
 
     private
 
-    def retries_remaining?(retries)
+    def decrement_retries!
+      self.retries = self.retries - 1
+    end
+
+    def retries_remaining?
       retries > 0
     end
   end

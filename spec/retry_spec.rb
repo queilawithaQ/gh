@@ -14,10 +14,10 @@ describe GH::Retry do
     end
   end
 
-  before { subject.backend = not_finder.new }
+  subject { described_class.new(not_finder.new, retries: 3, wait: 0.1) }
 
   it 'retries request specified number of times' do
-    expect { subject['users/not-found', retries: 3, sleep: 0.1] }.to raise_error(GH::Error)
+    expect { subject['users/not-found'] }.to raise_error(GH::Error)
     expect(subject.backend.requests.count).to eq 3
   end
 
