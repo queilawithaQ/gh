@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'gh/retry'
 
 describe GH::Retry do
   let(:not_finder) do

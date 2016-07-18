@@ -15,6 +15,7 @@ module GH
   autoload :Normalizer,       'gh/normalizer'
   autoload :Pagination,       'gh/pagination'
   autoload :Parallel,         'gh/parallel'
+  autoload :Retry,            'gh/retry'
   autoload :Remote,           'gh/remote'
   autoload :Response,         'gh/response'
   autoload :ResponseWrapper,  'gh/response_wrapper'
