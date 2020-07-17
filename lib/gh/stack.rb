@@ -56,6 +56,10 @@ module GH
       @stack.map! { |klass, options| [old_class == klass ? new_class : klass, options] }
     end
 
+    def remove(klass)
+      @stack.keep_if { |k, opts| k != klass }
+    end
+
     alias_method :new, :build
   end
 end
