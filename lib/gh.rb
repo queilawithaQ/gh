@@ -63,7 +63,6 @@ module GH
   DefaultStack = Stack.new do
     use Instrumentation
     use Parallel
-    use TokenCheck
     use Pagination
     use LinkFollower
     use MergeCommit
