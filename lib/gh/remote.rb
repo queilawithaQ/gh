@@ -1,5 +1,6 @@
 require 'gh'
 require 'faraday'
+require 'active_support/core_ext/string'
 
 module GH
   # Public: This class deals with HTTP requests to Github. It is the base Wrapper you always want to use.
@@ -7,7 +8,7 @@ module GH
   class Remote < Wrapper
     attr_reader :api_host, :connection, :headers, :prefix
 
-    # Public: Generates a new Rempte instance.
+    # Public: Generates a new Remote instance.
     #
     # api_host - HTTP host to send requests to, has to include schema (https or http)
     # options  - Hash with configuration options:
@@ -16,7 +17,6 @@ module GH
     #            :password - Github password used for login (optional).
     #            :origin   - Value of the origin request header (optional).
     #            :headers  - HTTP headers to be send on every request (optional).
-    #            :adapter  - HTTP library to use for making requests (optional, default: :net_http)
     #
     # It is highly recommended to set origin, but not to set headers.
     # If you set the username, you should also set the password.
@@ -48,7 +48,10 @@ module GH
         builder.request(:basic_auth, username, password)  if username and password
         builder.request(:retry)
         builder.response(:raise_error)
-        #builder.use(options[:adapter] || GH::FaradayAdapter)
+        if defined? FaradayMiddleware::Instrumentation
+          builder.use :instrumentation
+        end
+        builder.response(:logger, nil, formatter: GH.const_get(options[:formatter].camelize)) if options[:formatter]
         builder.adapter(:net_http)
       end
     end
@@ -74,7 +77,8 @@ module GH
 
     # Internal: ...
     def http(verb, url, headers = {}, &block)
-      connection.run_request(verb, url, nil, headers, &block)
+      body = headers.delete :body
+      connection.run_request(verb, url, body, headers, &block)
     rescue Exception => error
       raise Error.new(error, nil, :verb => verb, :url => url, :headers => headers)
     end
